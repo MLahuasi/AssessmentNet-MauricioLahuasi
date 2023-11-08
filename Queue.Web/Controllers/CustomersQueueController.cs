@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Queue.Web.Models;
 using Queue.Web.Models.Entity;
+using Queue.Web.Models.Entity.DTOs;
+using Queue.Web.Services;
 
 namespace Queue.Web.Controllers
 {
@@ -11,24 +13,21 @@ namespace Queue.Web.Controllers
     public class CustomersQueueController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
+        private readonly CustomerServices _srv;
 
         public CustomersQueueController(AppDbContext context)
         {
             _dbContext = context;
+            _srv = new CustomerServices(_dbContext);
         }
 
         [HttpGet]
-        [Route("Lista")]
-        public async Task<IActionResult> Lista()
+        [Route("List")]
+        public async Task<IActionResult> List()
         {
 
-            //var lista = 
-            //    _dbContext.CustomersQueue
-            //    .OrderByDescending(x => x.Id)
-            //    .ThenBy(t => t.Name)
-            //    .ToList();
-
             var lista = await _dbContext.CustomersQueue
+               .Include(cq => cq.Customers)
                .OrderBy(cq => cq.Duration)
                .ToListAsync();
 
@@ -36,8 +35,8 @@ namespace Queue.Web.Controllers
         }
 
         [HttpPost]
-        [Route("Guardar")]
-        public async Task<IActionResult> Guardar([FromBody] CustomerQueue request)
+        [Route("Save")]
+        public async Task<IActionResult> Save([FromBody] CustomerQueue request)
         {
             await _dbContext.CustomersQueue.AddAsync(request);
             await _dbContext.SaveChangesAsync();
@@ -45,13 +44,29 @@ namespace Queue.Web.Controllers
         }
 
         [HttpDelete]
-        [Route("Cerrar/{id:int}")]
-        public async Task<IActionResult> Cerrar(int id)
+        [Route("Delete/{id:int}")]
+        public async Task<IActionResult> Delete(int id)
         {
             CustomerQueue queue = _dbContext.CustomersQueue.Find(id);
             _dbContext.CustomersQueue.Remove(queue);
             await _dbContext.SaveChangesAsync();
             return StatusCode(StatusCodes.Status200OK, "ok");
         }
+
+        [HttpPost]
+        [Route("SaveCustomer")]
+        public async Task<IActionResult> SaveCustomer([FromBody] AddCustomer request)
+        {
+            if( string.IsNullOrEmpty(request.Ci) || string.IsNullOrEmpty(request.Name))
+                return StatusCode(StatusCodes.Status400BadRequest, "error");
+
+            var result = await _srv.AddCusomer(request.Ci, request.Name);
+            if(result)
+                return StatusCode(StatusCodes.Status200OK, "ok");
+            else
+                return StatusCode(StatusCodes.Status400BadRequest, "error");
+        }
+
+        
     }
 }

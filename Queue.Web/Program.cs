@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Queue.Web.Models;
-using Queue.Web.Transacctions;
-using Queue.Web.Transacctions.Invoker;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -12,28 +11,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Add services to the container.
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+});
 
-// Servicio Command
-builder.Services.AddScoped<ClientAdvisor>();
 
 var app = builder.Build();
-
-// Iniciar Servicio Command
-using (var serviceScope = app.Services.CreateScope())
-{
-    var services = serviceScope.ServiceProvider;
-    try
-    {
-        var queueService = services.GetRequiredService<ClientAdvisor>();
-        queueService.ChargeCustomers.Wait();
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred.");
-    }
-}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

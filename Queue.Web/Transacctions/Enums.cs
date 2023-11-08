@@ -1,4 +1,4 @@
-﻿namespace Queue.Web.Transacctions.Command
+﻿namespace Queue.Web.Transacctions
 {
     public static class Action
     {
