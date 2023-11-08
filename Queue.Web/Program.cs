@@ -1,13 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using Queue.Web.Models;
+using Queue.Web.Services;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 var connectionString = configuration.GetConnectionString("DefaultConnection");
 
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+builder.Services.AddTransient<IService, CustomerQueueService>();
+builder.Services.AddTransient<IService, CustomerServices>();
+
+
 
 // Add services to the container.
 

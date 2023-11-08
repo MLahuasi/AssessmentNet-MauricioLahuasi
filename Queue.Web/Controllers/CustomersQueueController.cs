@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Queue.Web.Models;
@@ -14,23 +15,19 @@ namespace Queue.Web.Controllers
     {
         private readonly AppDbContext _dbContext;
         private readonly CustomerServices _srv;
-
+        private readonly CustomerQueueService _srvQueue;
         public CustomersQueueController(AppDbContext context)
         {
             _dbContext = context;
             _srv = new CustomerServices(_dbContext);
+            _srvQueue = new CustomerQueueService(_dbContext);
         }
 
         [HttpGet]
         [Route("List")]
         public async Task<IActionResult> List()
         {
-
-            var lista = await _dbContext.CustomersQueue
-               .Include(cq => cq.Customers)
-               .OrderBy(cq => cq.Duration)
-               .ToListAsync();
-
+            var lista = await _srvQueue.Get();
             return StatusCode(StatusCodes.Status200OK, lista);
         }
 
@@ -38,19 +35,25 @@ namespace Queue.Web.Controllers
         [Route("Save")]
         public async Task<IActionResult> Save([FromBody] CustomerQueue request)
         {
-            await _dbContext.CustomersQueue.AddAsync(request);
-            await _dbContext.SaveChangesAsync();
-            return StatusCode(StatusCodes.Status200OK, "ok");
+            if (request.Duration > 1 || string.IsNullOrEmpty(request.Name))
+                return StatusCode(StatusCodes.Status400BadRequest, "error");
+
+            var result = await _srvQueue.Add(request);
+            if (result)
+                return StatusCode(StatusCodes.Status200OK, "ok");
+            else
+                return StatusCode(StatusCodes.Status400BadRequest, "error");
         }
 
         [HttpDelete]
         [Route("Delete/{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            CustomerQueue queue = _dbContext.CustomersQueue.Find(id);
-            _dbContext.CustomersQueue.Remove(queue);
-            await _dbContext.SaveChangesAsync();
-            return StatusCode(StatusCodes.Status200OK, "ok");
+            var result = await _srvQueue.Delete(id);
+            if (result)
+                return StatusCode(StatusCodes.Status200OK, "ok");
+            else
+                return StatusCode(StatusCodes.Status400BadRequest, "error");
         }
 
         [HttpPost]
@@ -60,13 +63,23 @@ namespace Queue.Web.Controllers
             if( string.IsNullOrEmpty(request.Ci) || string.IsNullOrEmpty(request.Name))
                 return StatusCode(StatusCodes.Status400BadRequest, "error");
 
-            var result = await _srv.AddCusomer(request.Ci, request.Name);
+            var result = await _srv.Add(request.Ci, request.Name);
             if(result)
                 return StatusCode(StatusCodes.Status200OK, "ok");
             else
                 return StatusCode(StatusCodes.Status400BadRequest, "error");
         }
 
-        
+        [HttpDelete]
+        [Route("DeleteCustomer/{id:int}")]
+        public async Task<IActionResult> DeleteCustomer(int id)
+        {
+            var result = await _srv.Delete(id);
+            if (result)
+                return StatusCode(StatusCodes.Status200OK, "ok");
+            else
+                return StatusCode(StatusCodes.Status400BadRequest, "error");
+        }
+
     }
 }

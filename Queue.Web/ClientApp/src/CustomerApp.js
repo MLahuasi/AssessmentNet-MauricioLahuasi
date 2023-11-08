@@ -7,6 +7,11 @@ const CustomerApp = () => {
   const [name, setName] = useState("");
   const [ci, setCi] = useState("");
 
+  //Ejecutar al iniciar la app
+  useEffect(() => {
+    showQueues();
+  }, []);
+
   const showQueues = async () => {
     const response = await fetch("api/customersqueue/List");
 
@@ -20,11 +25,6 @@ const CustomerApp = () => {
       console.log("status code:" + response.status);
     }
   };
-
-  //Ejecutar al iniciar la app
-  useEffect(() => {
-    showQueues();
-  }, []);
 
   const saveCustomer = async (e) => {
     e.preventDefault();
@@ -44,6 +44,27 @@ const CustomerApp = () => {
       setCi("");
       await showQueues();
     }
+  };
+
+  const deleteCustomer = async (id) => {
+    const response = await fetch(`api/customersqueue/DeleteCustomer${id}`);
+
+    if (response.ok) {
+      await showQueues();
+    } else {
+      console.log("status code:" + response.status);
+    }
+  };
+
+  const getDeleteCustomers = async () => {
+    let arrayDeleteCustomers = [];
+    customersqueue.forEach((queue) => {
+      console.log(queue);
+      queue["customers"]["$values"].foreach((customer) => {
+        console.log(customer);
+        arrayDeleteCustomers.push(customer);
+      });
+    });
   };
 
   return (
