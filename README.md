@@ -12,3 +12,11 @@
 ```
     Update-Database
 ```
+
+```
+npm install react@latest react-dom@latest
+
+Scaffold-DbContext "Server=ELESSAR; DataBase=AssessmentNet;Integrated Security=false; TrustServerCertificate=True; User Id=sa;Password=P@$$w0rd;" Microsoft.EntityFrameworkCore.SqlServer -OutPutDir Models
+
+dotnet ef dbcontext scaffold "Server=ELESSAR; DataBase=AssessmentNet;Integrated Security=false; TrustServerCertificate=True; User Id=sa;Password=P@$$w0rd;" Microsoft.EntityFrameworkCore.SqlServer -OutPutDir Models
+```
