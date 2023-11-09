@@ -43,16 +43,20 @@ namespace Queue.Web.Services
         {
             try
             {
-                var currentCustomer = await _dbContext.Customers.AsTracking()
-                .FirstOrDefaultAsync(a => a.Id == id);
+                //var currentCustomer = await _dbContext.Customers.AsTracking()
+                //.FirstOrDefaultAsync(a => a.Id == id);
 
-                if (currentCustomer is null)
-                    return false;
+                //if (currentCustomer is null)
+                //    return false;
 
-                currentCustomer.FinishDate = DateTime.Now;
-                currentCustomer.Status = Transacctions.Action.Attend;
+                //currentCustomer.FinishDate = DateTime.Now;
+                //currentCustomer.Status = Transacctions.Action.Attend;
 
-                _dbContext.Update(currentCustomer);
+                //_dbContext.Update(currentCustomer);
+                
+
+                Customer customer = _dbContext.Customers.Find(id);
+                _dbContext.Customers.Remove(customer);
                 await _dbContext.SaveChangesAsync();
                 return true;
             }

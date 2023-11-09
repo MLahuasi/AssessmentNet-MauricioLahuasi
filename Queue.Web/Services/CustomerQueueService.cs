@@ -1,8 +1,10 @@
 ﻿using Azure.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using Queue.Web.Models;
 using Queue.Web.Models.Entity;
 using Queue.Web.Models.Entity.DTOs;
+using System.Collections.ObjectModel;
 
 namespace Queue.Web.Services
 {
@@ -23,6 +25,7 @@ namespace Queue.Web.Services
                    .Include(cq => cq.Customers)
                    .OrderBy(cq => cq.Duration)
                    .ToListAsync();
+
 
                 return results;
             }
