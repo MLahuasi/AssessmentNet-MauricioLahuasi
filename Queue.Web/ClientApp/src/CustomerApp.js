@@ -9,6 +9,7 @@ import {
 const CustomerApp = () => {
   const [queues, setQueues] = useState([]);
   const [nextClients, setNextClients] = useState([]);
+  const [refresh, setRefresh] = useState("");
 
   //Ejecutar al iniciar la app
   useEffect(() => {
@@ -40,19 +41,27 @@ const CustomerApp = () => {
         let client = nextClients[i];
         console.log(`Cliente a eliminar ${client.customer}`);
         let result = await funDeleteCustomer(client.customer, client.duration);
-        console.log(`Resultado ELIMINAR ${result}`);
-        if (result)
-          console.log(
-            `Cliente ${client.customer} atendido - Cola#${client.queue} Tiempo:${client.duration}`
-          );
-      }
+        console.log(`Resultado eliminar ${client.customer} = ${result}`);
 
-      let queueValues = await funGetQueues();
-      setQueues(queueValues);
+        let mensaje = null;
+        if (result === "OK") {
+          mensaje = `Cliente ${client.customer} atendido - Cola#${client.queue} Tiempo:${client.duration}`;
+          console.log(mensaje);
+          setRefresh(mensaje);
+
+          // Actualizar las colas después de cada eliminación de cliente
+          let queueValues = await funGetQueues();
+          setQueues(queueValues);
+        } else {
+          mensaje = `Cliente ${client.customer} error - Cola#${client.queue} Tiempo:${client.duration}`;
+          setRefresh(mensaje);
+          break;
+        }
+      }
     };
 
     fun();
-  }, [nextClients]);
+  }, [nextClients, refresh]);
 
   return (
     <>
