@@ -116,6 +116,16 @@ namespace Queue.Web.Services
             return CustomersQueue;
         }
 
+        public async Task<Customer> GetCustomerById(int id)
+        {
+            var customer = await _dbContext.Customers
+                .Include(c => c.Queue)
+                .Where(c => c.Id == id)
+                .FirstAsync();
+
+            return customer;
+        }
+
         private async Task<CustomerQueue?> GetMinQueueWithOutCustomer()
         {
             var result = await _dbContext.CustomersQueue

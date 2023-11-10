@@ -50,6 +50,7 @@ namespace Queue.Web.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var result = await _srvQueue.Delete(id);
+
             if (result)
                 return StatusCode(StatusCodes.Status200OK, "ok");
             else
